@@ -1,10 +1,12 @@
 # Skills Map
+<img width="2556" height="1186" alt="Screenshot 2026-01-18 134753" src="https://github.com/user-attachments/assets/cbca1d7a-8d6d-4826-a3fd-9a7bd90db608" />
 
 A browser-based skill tracking and visualization tool. Map your technical abilities, track progress over time, and discover connections between skills using an interactive network graph.
 
 Built as a single HTML file with no build process required. Data persists locally using IndexedDB with localStorage fallback.
 
 ---
+
 
 ## Features
 
