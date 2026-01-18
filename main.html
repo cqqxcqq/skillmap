@@ -1,0 +1,2784 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>my skills</title>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f4f1eb;
+            --bg-secondary: #fff;
+            --bg-tertiary: #fafaf8;
+            --border-color: #2d2a26;
+            --border-light: #e0ddd6;
+            --text-primary: #2d2a26;
+            --text-secondary: #6b6560;
+            --accent-yellow: #ffeaa7;
+            --accent-green: #a8e6cf;
+            --accent-orange: #e85d04;
+            --accent-red: #e53e3e;
+            --shadow-color: #2d2a26;
+            --grid-color: #d4d0c8;
+            --network-bg: #fdfcfa;
+            --network-grid: #e8e4db;
+        }
+
+        [data-theme="blueprint"] {
+            --bg-primary: #0d1b2a;
+            --bg-secondary: #1b263b;
+            --bg-tertiary: #152238;
+            --border-color: #4cc9f0;
+            --border-light: #2a4a6a;
+            --text-primary: #e0fbfc;
+            --text-secondary: #98c1d9;
+            --accent-yellow: #f0a500;
+            --accent-green: #4cc9f0;
+            --accent-orange: #f48c06;
+            --accent-red: #ef476f;
+            --shadow-color: #000;
+            --grid-color: #1b3a5a;
+            --network-bg: #0d1b2a;
+            --network-grid: #1b3a5a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            background-image:
+                radial-gradient(var(--grid-color) 1px, transparent 1px),
+                radial-gradient(var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        [data-theme="blueprint"] body {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+            max-width: 320px;
+        }
+
+        .toast.error {
+            background: #fff5f5;
+            border: 2px solid #e53e3e;
+            color: #c53030;
+        }
+
+        .toast.success {
+            background: #f0fff4;
+            border: 2px solid #38a169;
+            color: #276749;
+        }
+
+        .toast.info {
+            background: #ebf8ff;
+            border: 2px solid #3182ce;
+            color: #2b6cb0;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 4px 4px 0 var(--shadow-color);
+            z-index: 10000;
+            min-width: 180px;
+            display: none;
+            overflow: hidden;
+        }
+
+        .context-menu.show {
+            display: block;
+        }
+
+        .context-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.15s;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .context-item:last-child {
+            border-bottom: none;
+        }
+
+        .context-item:hover {
+            background: var(--accent-yellow);
+        }
+
+        .context-item.danger {
+            color: var(--accent-red);
+        }
+
+        .context-item.danger:hover {
+            background: #fed7d7;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-family: 'Caveat', cursive;
+            font-size: 2.2rem;
+            color: var(--text-primary);
+            position: relative;
+        }
+
+        [data-theme="blueprint"] .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--accent-yellow);
+            z-index: -1;
+            transform: rotate(-1deg);
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .header-btn {
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 2px 2px 0 var(--shadow-color);
+            color: var(--text-primary);
+        }
+
+        .header-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--shadow-color);
+        }
+
+        .header-btn.primary {
+            background: var(--accent-yellow);
+        }
+
+        .header-btn.connected {
+            background: #c6f6d5;
+            border-color: #38a169;
+        }
+
+        .header-btn.danger {
+            background: #fed7d7;
+            border-color: #c53030;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 3px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 6px 6px 0 var(--shadow-color);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal h3 {
+            font-family: 'Caveat', cursive;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        [data-theme="blueprint"] .modal h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+        }
+
+        .modal label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .modal input,
+        .modal select,
+        .modal textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            margin-bottom: 12px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .modal input:focus,
+        .modal select:focus,
+        .modal textarea:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+            transition: all 0.15s;
+        }
+
+        .modal-actions .cancel {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .modal-actions .confirm {
+            background: var(--accent-yellow);
+        }
+
+        /* Progress Slider */
+        .progress-group {
+            margin-bottom: 14px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .progress-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-orange);
+        }
+
+        .progress-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: var(--border-light);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .progress-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-orange);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+        }
+
+        .progress-level {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Hours Tracker */
+        .hours-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .hours-display {
+            flex: 1;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .hours-btn {
+            padding: 10px 14px;
+            background: var(--accent-green);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .hours-btn:hover {
+            background: #88d8b0;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-messages {
+                height: 260px !important;
+            }
+
+            #network-container {
+                height: 320px !important;
+            }
+        }
+
+        /* Chat */
+        .chat-area {
+            background: var(--bg-secondary);
+            border: 3px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 4px 4px 0 var(--shadow-color);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--border-color);
+            background: var(--accent-yellow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header h2 {
+            font-family: 'Caveat', cursive;
+            font-size: 1.2rem;
+        }
+
+        [data-theme="blueprint"] .chat-header h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message {
+            max-width: 88%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .message.bot {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-light);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user {
+            background: var(--border-color);
+            color: var(--bg-secondary);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.thinking {
+            background: #fff3e0;
+            border: 2px dashed var(--accent-orange);
+        }
+
+        .chat-input-area {
+            padding: 10px;
+            border-top: 2px solid var(--border-light);
+            background: var(--bg-tertiary);
+        }
+
+        .chat-form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 40px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .chat-input:focus {
+            outline: none;
+            box-shadow: 2px 2px 0 var(--shadow-color);
+        }
+
+        .chat-input:disabled {
+            opacity: 0.5;
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-orange);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 2px 2px 0 var(--shadow-color);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+        }
+
+        .send-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+            stroke-width: 2.5;
+            fill: none;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            padding: 4px 8px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-light);
+            border-radius: 14px;
+            font-size: 0.68rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .quick-btn:hover:not(:disabled) {
+            border-color: var(--border-color);
+            background: var(--accent-yellow);
+        }
+
+        .quick-btn:disabled {
+            opacity: 0.5;
+        }
+
+        /* Stickers */
+        .skill-stickers {
+            background: var(--bg-secondary);
+            border: 3px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 4px 4px 0 var(--shadow-color);
+            padding: 14px;
+            margin-top: 16px;
+        }
+
+        .stickers-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .stickers-header h3 {
+            font-family: 'Caveat', cursive;
+            font-size: 1.1rem;
+        }
+
+        [data-theme="blueprint"] .stickers-header h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .sticker-count {
+            background: var(--border-color);
+            color: var(--bg-secondary);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        .add-skill-btn {
+            width: 26px;
+            height: 26px;
+            background: var(--accent-green);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+
+        .stickers-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .skill-sticker {
+            padding: 6px 10px 6px 8px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .skill-sticker:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .skill-sticker.rusty {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
+        .skill-sticker.has-children::after {
+            content: '▸';
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+        }
+
+        .sticker-progress {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .sticker-progress svg {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            transform: rotate(-90deg);
+        }
+
+        .sticker-progress circle {
+            fill: none;
+            stroke-width: 3;
+        }
+
+        .sticker-progress .bg {
+            stroke: var(--border-light);
+        }
+
+        .sticker-progress .fg {
+            stroke: var(--accent-orange);
+            stroke-linecap: round;
+        }
+
+        .proof-link {
+            font-size: 0.65rem;
+            color: var(--accent-orange);
+            text-decoration: none;
+        }
+
+        .stickers-empty {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            width: 100%;
+        }
+
+        /* Drill-down breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+            font-size: 0.75rem;
+        }
+
+        .breadcrumb-item {
+            padding: 4px 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .breadcrumb-item:hover {
+            background: var(--accent-yellow);
+        }
+
+        /* Network */
+        .network-card {
+            background: var(--bg-secondary);
+            border: 3px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 4px 4px 0 var(--shadow-color);
+            overflow: hidden;
+        }
+
+        .network-header {
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--border-color);
+            background: var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .network-header h2 {
+            font-family: 'Caveat', cursive;
+            font-size: 1.2rem;
+        }
+
+        [data-theme="blueprint"] .network-header h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .network-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .icon-btn {
+            width: 28px;
+            height: 28px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            background: var(--accent-yellow);
+        }
+
+        .icon-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke: var(--text-primary);
+        }
+
+        .network-wrapper {
+            position: relative;
+        }
+
+        #network-container {
+            height: 380px;
+            background: var(--network-bg);
+            background-image:
+                linear-gradient(var(--network-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--network-grid) 1px, transparent 1px);
+            background-size: 25px 25px;
+            cursor: crosshair;
+        }
+
+        .network-empty {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .network-empty svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+            stroke: var(--text-secondary);
+        }
+
+        .network-empty p {
+            font-family: 'Caveat', cursive;
+            font-size: 1.1rem;
+        }
+
+        /* Legend */
+        .legend {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 0.65rem;
+            z-index: 10;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .legend-line {
+            width: 14px;
+            height: 2px;
+            border-radius: 1px;
+        }
+
+        /* Timeline Slider */
+        .timeline-bar {
+            padding: 10px 14px;
+            background: var(--bg-tertiary);
+            border-top: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeline-bar label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .timeline-slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background: var(--border-light);
+            border-radius: 3px;
+        }
+
+        .timeline-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-orange);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+        }
+
+        .timeline-date {
+            font-size: 0.7rem;
+            font-weight: 500;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        /* Connections Panel */
+        .connections-panel {
+            background: var(--bg-secondary);
+            border: 3px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 4px 4px 0 var(--shadow-color);
+            padding: 14px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .connections-panel.show {
+            display: block;
+        }
+
+        .connections-header {
+            font-family: 'Caveat', cursive;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        [data-theme="blueprint"] .connections-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .connection-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 0;
+            border-bottom: 1px dashed var(--border-light);
+            font-size: 0.75rem;
+        }
+
+        .connection-item:last-child {
+            border-bottom: none;
+        }
+
+        .conn-from,
+        .conn-to {
+            padding: 2px 6px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .conn-arrow {
+            color: var(--accent-orange);
+            font-weight: bold;
+        }
+
+        .conn-type {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            padding: 1px 5px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            margin-left: auto;
+        }
+
+        .conn-delete {
+            width: 18px;
+            height: 18px;
+            background: #fed7d7;
+            border: 1px solid #c53030;
+            border-radius: 3px;
+            color: #c53030;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        /* Quiz Modal */
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .quiz-option {
+            padding: 12px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.15s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--accent-orange);
+            background: var(--bg-tertiary);
+        }
+
+        .quiz-option.correct {
+            border-color: #38a169;
+            background: #f0fff4;
+        }
+
+        .quiz-option.wrong {
+            border-color: #c53030;
+            background: #fff5f5;
+        }
+
+        /* Loading */
+        .loading-dots span {
+            animation: loadingDot 1.4s infinite;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loadingDot {
+
+            0%,
+            80%,
+            100% {
+                opacity: 0.3;
+            }
+
+            40% {
+                opacity: 1;
+            }
+        }
+
+        /* Keyboard hint */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.7rem;
+            display: flex;
+            gap: 16px;
+            box-shadow: 2px 2px 0 var(--shadow-color);
+        }
+
+        .kbd {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            border: 1px solid var(--border-light);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-item" onclick="contextAction('edit')">✏️ Edit Skill</div>
+        <div class="context-item" onclick="contextAction('refresh')">🔄 Refresh (Practice)</div>
+        <div class="context-item" onclick="contextAction('addChild')">➕ Add Sub-Skill</div>
+        <div class="context-item" onclick="contextAction('quiz')">🧠 Test Me</div>
+        <div class="context-item" onclick="contextAction('freeze')">📌 Freeze Position</div>
+        <div class="context-item danger" onclick="contextAction('delete')">🗑️ Delete</div>
+    </div>
+
+    <!-- API Modal -->
+    <div class="modal-overlay" id="apiModal">
+        <div class="modal">
+            <h3>🔑 Groq API Key</h3>
+            <label>API Key</label>
+            <input type="password" id="apiKeyInput" placeholder="gsk_...">
+            <small
+                style="display:block;margin-top:-8px;margin-bottom:12px;font-size:0.7rem;color:var(--text-secondary);">
+                Free at <a href="https://console.groq.com" target="_blank"
+                    style="color:var(--accent-orange)">console.groq.com</a>
+            </small>
+            <div class="modal-actions">
+                <button class="cancel" onclick="closeModal('apiModal')">Cancel</button>
+                <button class="confirm" onclick="saveApiKey()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Skill Modal -->
+    <div class="modal-overlay" id="skillModal">
+        <div class="modal">
+            <h3 id="skillModalTitle">➕ Add Skill</h3>
+            <input type="hidden" id="skillId">
+
+            <label>Name</label>
+            <input type="text" id="skillName" placeholder="e.g., JavaScript">
+
+            <label>Parent Skill (for sub-skills)</label>
+            <select id="skillParent">
+                <option value="">— None (Top-level) —</option>
+            </select>
+
+            <div class="progress-group">
+                <div class="progress-header">
+                    <label style="margin:0">Proficiency</label>
+                    <span class="progress-value" id="progressValue">50%</span>
+                </div>
+                <input type="range" class="progress-slider" id="skillProgress" min="0" max="100" value="50"
+                    oninput="updateProgressLabel()">
+                <div class="progress-level" id="progressLevel">Intermediate</div>
+            </div>
+
+            <div class="hours-group">
+                <div class="hours-display">
+                    <span id="hoursValue">0</span> hours invested
+                </div>
+                <button class="hours-btn" onclick="addHour()">+1h</button>
+                <button class="hours-btn" onclick="addHours(10)">+10h</button>
+            </div>
+
+            <label>Proof / Evidence (URL)</label>
+            <input type="text" id="skillProof" placeholder="https://github.com/...">
+
+            <label>Description</label>
+            <input type="text" id="skillDesc" placeholder="Brief description...">
+
+            <div class="modal-actions">
+                <button class="cancel" onclick="closeModal('skillModal')">Cancel</button>
+                <button class="confirm" onclick="saveSkill()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div class="modal-overlay" id="quizModal">
+        <div class="modal">
+            <h3>🧠 Test: <span id="quizSkillName"></span></h3>
+            <p id="quizQuestion" style="font-size:0.9rem;line-height:1.5;margin-bottom:10px;"></p>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div id="quizResult" style="text-align:center;font-weight:600;margin-top:10px;"></div>
+            <div class="modal-actions">
+                <button class="confirm" onclick="closeModal('quizModal')" style="flex:none;width:100%;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal-overlay" id="importModal">
+        <div class="modal">
+            <h3>📥 Import Data</h3>
+            <label>Paste JSON</label>
+            <textarea id="importData" rows="6" placeholder='{"skills":[...],"relations":[...]}'></textarea>
+            <div class="modal-actions">
+                <button class="cancel" onclick="closeModal('importModal')">Cancel</button>
+                <button class="confirm" onclick="importData()">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Modal -->
+    <div class="modal-overlay" id="resumeModal">
+        <div class="modal">
+            <h3>📄 Resume Export</h3>
+            <textarea id="resumeOutput" rows="12" readonly style="font-family:monospace;font-size:0.75rem;"></textarea>
+            <div class="modal-actions">
+                <button class="cancel" onclick="closeModal('resumeModal')">Close</button>
+                <button class="confirm" onclick="copyResume()">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal">
+            <h3>🔗 Share Link</h3>
+            <label>Shareable URL (read-only)</label>
+            <input type="text" id="shareUrl" readonly>
+            <div class="modal-actions">
+                <button class="cancel" onclick="closeModal('shareModal')">Close</button>
+                <button class="confirm" onclick="copyShareUrl()">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div>
+                <div class="logo">my skills ✏️</div>
+                <p class="tagline">map your abilities, track your growth</p>
+            </div>
+
+            <div class="header-actions">
+                <button class="header-btn" onclick="toggleTheme()" id="themeBtn">🎨 Blueprint</button>
+                <button class="header-btn" id="apiBtn" onclick="openModal('apiModal')">
+                    <span id="apiIcon">🔑</span> <span id="apiText">AI</span>
+                </button>
+                <button class="header-btn" onclick="generateResume()">📄 Resume</button>
+                <button class="header-btn" onclick="generateShareUrl()">🔗 Share</button>
+                <button class="header-btn" onclick="exportData()">📤</button>
+                <button class="header-btn" onclick="openModal('importModal')">📥</button>
+                <button class="header-btn danger" onclick="clearAll()">🗑️</button>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <div class="sidebar">
+                <div class="chat-area">
+                    <div class="chat-header">
+                        <span>💬</span>
+                        <h2>chat</h2>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot">
+                            hey! 👋 tell me your skills:<br><br>
+                            • "i know react pretty well"<br>
+                            • "learning python 30%"<br><br>
+                            try: "connect skills", "roast me", "roadmap to ML"
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <form class="chat-form" onsubmit="handleSubmit(event)">
+                            <textarea class="chat-input" id="chatInput" placeholder="skills, questions..." rows="1"
+                                onkeydown="handleKeydown(event)"></textarea>
+                            <button type="submit" class="send-btn" id="sendBtn">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                        </form>
+                        <div class="quick-actions" id="quickActions">
+                            <button class="quick-btn" onclick="quickAction('connect my skills')">✨ connect</button>
+                            <button class="quick-btn" onclick="quickAction('roast my stack')">🔥 roast</button>
+                            <button class="quick-btn" onclick="quickAction('job match')">💼 jobs</button>
+                            <button class="quick-btn" onclick="quickAction('categorize')">🏷️ categorize</button>
+                            <button class="quick-btn" onclick="loadExample()">📋 demo</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="skill-stickers">
+                    <div class="stickers-header">
+                        <div style="display:flex;align-items:center;">
+                            <h3>skills</h3>
+                            <span class="sticker-count" id="stickerCount">0</span>
+                        </div>
+                        <button class="add-skill-btn" onclick="openAddSkillModal()" title="Add skill">+</button>
+                    </div>
+                    <div class="breadcrumb" id="breadcrumb" style="display:none;"></div>
+                    <div class="stickers-grid" id="stickersGrid">
+                        <div class="stickers-empty">your skills appear here</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="viz-area">
+                <div class="network-card">
+                    <div class="network-header">
+                        <h2>skill map 🗺️</h2>
+                        <div class="network-actions">
+                            <button class="icon-btn" onclick="toggleManipulation()" id="manipBtn"
+                                title="Draw connections">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 5v14M5 12h14" />
+                                </svg>
+                            </button>
+                            <button class="icon-btn" onclick="centerNetwork()" title="Center">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </button>
+                            <button class="icon-btn" onclick="exportImage()" title="Save image">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                                    <circle cx="8.5" cy="8.5" r="1.5" />
+                                    <path d="M21 15l-5-5L5 21" />
+                                </svg>
+                            </button>
+                            <button class="icon-btn" onclick="saveData()" title="Save">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                    <path d="M17 21v-8H7v8M7 3v5h8" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="network-wrapper">
+                        <div id="network-container"></div>
+                        <div class="network-empty" id="networkEmpty">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="3" />
+                                <circle cx="4" cy="6" r="2" />
+                                <circle cx="20" cy="6" r="2" />
+                                <circle cx="4" cy="18" r="2" />
+                                <circle cx="20" cy="18" r="2" />
+                                <line x1="9.5" y1="10" x2="5.5" y2="7.5" />
+                                <line x1="14.5" y1="10" x2="18.5" y2="7.5" />
+                                <line x1="9.5" y1="14" x2="5.5" y2="16.5" />
+                                <line x1="14.5" y1="14" x2="18.5" y2="16.5" />
+                            </svg>
+                            <p>add skills to see the map ✨</p>
+                        </div>
+                        <div class="legend">
+                            <div class="legend-title">Progress</div>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#64b5f6"></div> 0-25%
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#ffb74d"></div> 26-50%
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#f06292"></div> 51-75%
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#ba68c8"></div> 76-100%
+                                </div>
+                                <div style="height:3px"></div>
+                                <div class="legend-item">
+                                    <div class="legend-line" style="background:#e85d04"></div> Prereq
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-line" style="background:#40c057"></div> Related
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-bar">
+                        <label>📅 Timeline:</label>
+                        <input type="range" class="timeline-slider" id="timelineSlider" min="0" max="100" value="100"
+                            oninput="filterByTimeline()">
+                        <span class="timeline-date" id="timelineDate">Now</span>
+                    </div>
+                </div>
+
+                <div class="connections-panel" id="connectionsPanel">
+                    <h3 class="connections-header">connections 🔗</h3>
+                    <div id="connectionsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="keyboard-hint">
+        <span><span class="kbd">Ctrl+Z</span> Undo</span>
+        <span><span class="kbd">Ctrl+Y</span> Redo</span>
+        <span><span class="kbd">Right-click</span> Menu</span>
+    </div>
+
+    <script>
+        // ========== STATE ==========
+        let skills = [];
+        let relations = [];
+        let network = null;
+        let apiKey = '';
+        let isLoading = false;
+        let currentParentView = null;
+        let contextSkillId = null;
+        let manipulationEnabled = false;
+        let focusedNode = null;
+
+        // Undo/Redo
+        let history = [];
+        let historyIndex = -1;
+        const MAX_HISTORY = 50;
+
+        const DB_NAME = 'SkillsMapDB';
+        const DB_VERSION = 2;
+        let db;
+
+        // ========== INIT ==========
+        async function init() {
+            try {
+                // Check for shared URL data
+                const urlData = getUrlData();
+                if (urlData) {
+                    skills = urlData.skills || [];
+                    relations = urlData.relations || [];
+                    showToast('Loaded shared skills!', 'success');
+                } else {
+                    await initDB();
+                    await loadData();
+                }
+
+                apiKey = localStorage.getItem('groq_api_key') || '';
+                if (apiKey) updateApiStatus(true);
+
+                // Load theme
+                const savedTheme = localStorage.getItem('theme') || 'scrapbook';
+                if (savedTheme === 'blueprint') {
+                    document.documentElement.setAttribute('data-theme', 'blueprint');
+                    document.getElementById('themeBtn').textContent = '📒 Scrapbook';
+                }
+
+                renderAll();
+                pushHistory();
+            } catch (e) {
+                console.error('Init error:', e);
+                showToast('Init failed', 'error');
+            }
+
+            // Event listeners
+            document.addEventListener('keydown', handleGlobalKeydown);
+            document.addEventListener('click', () => hideContextMenu());
+        }
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, DB_VERSION);
+                req.onerror = () => reject(req.error);
+                req.onsuccess = () => { db = req.result; resolve(); };
+                req.onupgradeneeded = (e) => {
+                    const d = e.target.result;
+                    if (!d.objectStoreNames.contains('skills')) d.createObjectStore('skills', { keyPath: 'id' });
+                    if (!d.objectStoreNames.contains('relations')) d.createObjectStore('relations', { autoIncrement: true });
+                };
+            });
+        }
+
+        // ========== TOAST ==========
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // ========== MODALS ==========
+        function openModal(id) { document.getElementById(id).classList.add('show'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('show');
+            });
+        });
+
+        // ========== CONTEXT MENU ==========
+        function showContextMenu(e, skillId) {
+            e.preventDefault();
+            contextSkillId = skillId;
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+            menu.classList.add('show');
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').classList.remove('show');
+        }
+
+        function contextAction(action) {
+            hideContextMenu();
+            if (!contextSkillId) return;
+
+            switch (action) {
+                case 'edit': openEditSkillModal(contextSkillId); break;
+                case 'refresh': refreshSkill(contextSkillId); break;
+                case 'addChild': openAddChildModal(contextSkillId); break;
+                case 'quiz': startQuiz(contextSkillId); break;
+                case 'freeze': freezeNode(contextSkillId); break;
+                case 'delete': removeSkill(contextSkillId); break;
+            }
+        }
+
+        // ========== THEME ==========
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const btn = document.getElementById('themeBtn');
+            if (current === 'blueprint') {
+                document.documentElement.removeAttribute('data-theme');
+                btn.textContent = '🎨 Blueprint';
+                localStorage.setItem('theme', 'scrapbook');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'blueprint');
+                btn.textContent = '📒 Scrapbook';
+                localStorage.setItem('theme', 'blueprint');
+            }
+            if (network) renderNetwork();
+        }
+
+        // ========== API KEY ==========
+        function saveApiKey() {
+            apiKey = document.getElementById('apiKeyInput').value.trim();
+            localStorage.setItem('groq_api_key', apiKey);
+            updateApiStatus(!!apiKey);
+            closeModal('apiModal');
+            if (apiKey) showToast('AI enabled!', 'success');
+        }
+
+        function updateApiStatus(connected) {
+            const btn = document.getElementById('apiBtn');
+            const icon = document.getElementById('apiIcon');
+            const text = document.getElementById('apiText');
+            if (connected) {
+                btn.classList.add('connected');
+                icon.textContent = '✓';
+                text.textContent = 'AI';
+            } else {
+                btn.classList.remove('connected');
+                icon.textContent = '🔑';
+                text.textContent = 'AI';
+            }
+        }
+
+        // ========== LOADING STATE ==========
+        function setLoading(loading) {
+            isLoading = loading;
+            document.getElementById('chatInput').disabled = loading;
+            document.getElementById('sendBtn').disabled = loading;
+            document.querySelectorAll('.quick-btn').forEach(b => b.disabled = loading);
+        }
+
+        // ========== HISTORY (UNDO/REDO) ==========
+        function pushHistory() {
+            const state = JSON.stringify({ skills: [...skills], relations: [...relations] });
+
+            // Remove future states if we're not at the end
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+
+            history.push(state);
+            if (history.length > MAX_HISTORY) history.shift();
+            historyIndex = history.length - 1;
+
+            // Backup to localStorage
+            localStorage.setItem('skills_backup', state);
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                restoreState(history[historyIndex]);
+                showToast('Undo', 'info');
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                restoreState(history[historyIndex]);
+                showToast('Redo', 'info');
+            }
+        }
+
+        function restoreState(stateJson) {
+            const state = JSON.parse(stateJson);
+            skills = state.skills;
+            relations = state.relations;
+            renderAll();
+            saveData();
+        }
+
+        function handleGlobalKeydown(e) {
+            if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+            if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+        }
+
+        // ========== CHAT ==========
+        function addMessage(content, type = 'bot') {
+            const container = document.getElementById('chatMessages');
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            msg.innerHTML = content;
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+            return msg;
+        }
+
+        function handleKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+            }
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            if (isLoading) return;
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            addMessage(text, 'user');
+            input.value = '';
+            await processInput(text);
+        }
+
+        function quickAction(action) {
+            if (isLoading) return;
+            document.getElementById('chatInput').value = action;
+            handleSubmit(new Event('submit'));
+        }
+
+        async function processInput(text) {
+            const lower = text.toLowerCase();
+
+            if (lower.includes('example') || lower.includes('demo')) {
+                loadExample();
+                addMessage("loaded demo skills! ✨");
+                return;
+            }
+
+            if (lower.includes('connect')) {
+                await generateConnections();
+                return;
+            }
+
+            if (lower.includes('roast')) {
+                await roastStack();
+                return;
+            }
+
+            if (lower.includes('job') || lower.includes('match')) {
+                await matchJobs();
+                return;
+            }
+
+            if (lower.includes('categorize') || lower.includes('category')) {
+                await categorizeSkills();
+                return;
+            }
+
+            if (lower.includes('roadmap') || lower.includes('learn')) {
+                await generateRoadmap(text);
+                return;
+            }
+
+            await parseSkillInput(text);
+        }
+
+        // ========== SKILL PARSING ==========
+        async function parseSkillInput(text) {
+            if (!apiKey) {
+                const parsed = simpleParseSkills(text);
+                if (parsed.length > 0) {
+                    parsed.forEach(s => addSkill(s));
+                    addMessage(`added ${parsed.length} skill${parsed.length > 1 ? 's' : ''} 👍`);
+                    renderAll();
+                    pushHistory();
+                    await saveData();
+                } else {
+                    addMessage("try: \"javascript 80%\" or \"python, react, sql\"");
+                }
+                return;
+            }
+
+            setLoading(true);
+            const thinkingMsg = addMessage('<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>', 'bot thinking');
+
+            try {
+                const response = await callGroq(`
+Parse skills from: "${text}"
+Return ONLY JSON array (no markdown): [{"name":"Skill","progress":0-100,"description":"brief"}]
+Infer progress from context. Default 50 if unclear.`);
+
+                thinkingMsg.remove();
+                const parsed = extractJSON(response);
+
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    parsed.forEach(s => addSkill({
+                        id: normalizeId(s.name),
+                        name: s.name,
+                        progress: Math.min(100, Math.max(0, s.progress || 50)),
+                        description: s.description || '',
+                        hours: 0,
+                        proof: '',
+                        parentId: null,
+                        lastUsed: Date.now(),
+                        dateAdded: Date.now(),
+                        category: null
+                    }));
+                    addMessage(`added: ${parsed.map(s => s.name).join(', ')} ✨`);
+                    renderAll();
+                    pushHistory();
+                    await saveData();
+                } else {
+                    throw new Error('No skills');
+                }
+            } catch (e) {
+                thinkingMsg.remove();
+                const parsed = simpleParseSkills(text);
+                if (parsed.length > 0) {
+                    parsed.forEach(s => addSkill(s));
+                    addMessage(`added ${parsed.length} skill${parsed.length > 1 ? 's' : ''}`);
+                    renderAll();
+                    pushHistory();
+                    await saveData();
+                } else {
+                    showToast('Parse error', 'error');
+                    addMessage("couldn't parse that 😅");
+                }
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function simpleParseSkills(text) {
+            const results = [];
+            const parts = text.split(/[,\n]|\band\b/i).map(p => p.trim()).filter(Boolean);
+
+            parts.forEach(part => {
+                let progress = 50;
+                let name = part;
+
+                // Check for percentage
+                const pctMatch = part.match(/(\d+)\s*%/);
+                if (pctMatch) {
+                    progress = parseInt(pctMatch[1]);
+                    name = part.replace(/\d+\s*%/, '').trim();
+                }
+
+                // Check for level words
+                const levels = { beginner: 20, intermediate: 50, advanced: 75, expert: 95 };
+                for (const [word, pct] of Object.entries(levels)) {
+                    if (part.toLowerCase().includes(word)) {
+                        progress = pct;
+                        name = part.replace(new RegExp(word, 'gi'), '').trim();
+                        break;
+                    }
+                }
+
+                name = name.replace(/^(i know|learning|know|good at)\s*/i, '').trim();
+                name = name.replace(/\s*(pretty well|well|basics?)$/i, '').trim();
+
+                if (name && name.length > 1) {
+                    results.push({
+                        id: normalizeId(name),
+                        name: name.charAt(0).toUpperCase() + name.slice(1),
+                        progress: Math.min(100, Math.max(0, progress)),
+                        description: '',
+                        hours: 0,
+                        proof: '',
+                        parentId: null,
+                        lastUsed: Date.now(),
+                        dateAdded: Date.now(),
+                        category: null
+                    });
+                }
+            });
+
+            return results;
+        }
+
+        // ========== AI FEATURES ==========
+        async function generateConnections() {
+            if (skills.length < 2) {
+                addMessage("add at least 2 skills first!");
+                return;
+            }
+            if (!apiKey) {
+                addMessage("need API key for this! 🔑");
+                return;
+            }
+
+            setLoading(true);
+            const thinkingMsg = addMessage('<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> analyzing...', 'bot thinking');
+
+            try {
+                const skillList = skills.filter(s => !s.parentId).map(s => `${s.name} (${s.progress}%)`).join(', ');
+                const ids = skills.filter(s => !s.parentId).map(s => s.id).join(', ');
+
+                const response = await callGroq(`
+Skills: ${skillList}
+IDs: ${ids}
+Find logical connections. Return ONLY JSON array:
+[{"from":"id","to":"id","type":"prerequisite|related","reason":"why"}]
+Max 8 connections. Only real relationships.`);
+
+                thinkingMsg.remove();
+                const parsed = extractJSON(response);
+
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    relations = parsed.filter(r =>
+                        skills.find(s => s.id === r.from) &&
+                        skills.find(s => s.id === r.to)
+                    );
+                    addMessage(`found ${relations.length} connections! 🗺️`);
+                    renderAll();
+                    pushHistory();
+                    await saveData();
+                }
+            } catch (e) {
+                thinkingMsg.remove();
+                showToast('Connection error', 'error');
+                addMessage("couldn't analyze 😅");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function roastStack() {
+            if (skills.length === 0) {
+                addMessage("add some skills first so i can roast them! 🔥");
+                return;
+            }
+            if (!apiKey) {
+                addMessage("need API key for roasting! 🔑");
+                return;
+            }
+
+            setLoading(true);
+            const thinkingMsg = addMessage('<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> preparing roast...', 'bot thinking');
+
+            try {
+                const skillList = skills.map(s => `${s.name} (${s.progress}%)`).join(', ');
+                const response = await callGroq(`
+Roast this developer's skill set. Be funny but insightful. Point out gaps, over-reliance on frameworks, or funny patterns.
+Skills: ${skillList}
+Keep it 2-3 sentences. Use emojis.`);
+
+                thinkingMsg.remove();
+                addMessage(`🔥 ${response.trim()}`);
+            } catch (e) {
+                thinkingMsg.remove();
+                addMessage("roast machine broke 😅");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function matchJobs() {
+            if (skills.length === 0) {
+                addMessage("add skills first!");
+                return;
+            }
+            if (!apiKey) {
+                addMessage("need API key! 🔑");
+                return;
+            }
+
+            setLoading(true);
+            const thinkingMsg = addMessage('<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> matching...', 'bot thinking');
+
+            try {
+                const skillList = skills.map(s => `${s.name} (${s.progress}%)`).join(', ');
+                const response = await callGroq(`
+Based on these skills: ${skillList}
+Match to job titles with percentage fit. Format as casual chat.
+Give 3 job titles with % match. Brief, 2-3 sentences total.`);
+
+                thinkingMsg.remove();
+                addMessage(`💼 ${response.trim()}`);
+            } catch (e) {
+                thinkingMsg.remove();
+                addMessage("matching failed 😅");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function categorizeSkills() {
+            if (skills.length === 0) {
+                addMessage("add skills first!");
+                return;
+            }
+            if (!apiKey) {
+                addMessage("need API key! 🔑");
+                return;
+            }
+
+            setLoading(true);
+            const thinkingMsg = addMessage('<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> categorizing...', 'bot thinking');
+
+            try {
+                const skillNames = skills.map(s => s.id).join(', ');
+                const response = await callGroq(`
+Categorize these skills: ${skillNames}
+Categories: Frontend, Backend, DevOps, Data, Mobile, Design, SoftSkill, Tool
+Return ONLY JSON: {"skill_id": "Category", ...}`);
+
+                thinkingMsg.remove();
+                const cats = extractJSON(response);
+
+                let count = 0;
+                for (const [id, cat] of Object.entries(cats)) {
+                    const skill = skills.find(s => s.id === id);
+                    if (skill) {
+                        skill.category = cat;
+                        count++;
+                    }
+                }
+
+                addMessage(`categorized ${count} skills! 🏷️`);
+                renderAll();
+                pushHistory();
+                await saveData();
+            } catch (e) {
+                thinkingMsg.remove();
+                addMessage("categorization failed 😅");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function generateRoadmap(text) {
+            if (!apiKey) {
+                addMessage("need API key for roadmaps! 🔑");
+                return;
+            }
+
+            setLoading(true);
+            const thinkingMsg = addMessage('<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> planning...', 'bot thinking');
+
+            try {
+                const current = skills.map(s => s.name).join(', ');
+                const response = await callGroq(`
+User knows: ${current || 'nothing yet'}
+They want to: ${text}
+Suggest 3-4 skills to learn in order as a roadmap.
+Be concise, casual, use emojis.`);
+
+                thinkingMsg.remove();
+                addMessage(`🛤️ ${response.trim()}`);
+            } catch (e) {
+                thinkingMsg.remove();
+                addMessage("roadmap failed 😅");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function startQuiz(skillId) {
+            const skill = skills.find(s => s.id === skillId);
+            if (!skill) return;
+
+            if (!apiKey) {
+                showToast('Need API key for quizzes', 'error');
+                return;
+            }
+
+            document.getElementById('quizSkillName').textContent = skill.name;
+            document.getElementById('quizOptions').innerHTML = '<p>Loading...</p>';
+            document.getElementById('quizResult').textContent = '';
+            openModal('quizModal');
+
+            try {
+                const response = await callGroq(`
+Generate a quiz question about ${skill.name}.
+Return ONLY JSON:
+{"question":"question text","options":["A","B","C","D"],"correct":0}
+correct is the index (0-3) of the right answer.`);
+
+                const quiz = extractJSON(response);
+                const optionsHtml = quiz.options.map((opt, i) => `
+                    <div class="quiz-option" onclick="checkAnswer(${i}, ${quiz.correct}, '${skillId}')">${opt}</div>
+                `).join('');
+
+                document.getElementById('quizQuestion').textContent = quiz.question;
+                document.getElementById('quizOptions').innerHTML = optionsHtml;
+            } catch (e) {
+                document.getElementById('quizQuestion').textContent = 'Failed to generate quiz.';
+                document.getElementById('quizOptions').innerHTML = '';
+            }
+        }
+
+        function checkAnswer(selected, correct, skillId) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach((opt, i) => {
+                opt.style.pointerEvents = 'none';
+                if (i === correct) opt.classList.add('correct');
+                else if (i === selected) opt.classList.add('wrong');
+            });
+
+            const result = document.getElementById('quizResult');
+            if (selected === correct) {
+                result.textContent = '✅ Correct! +5% progress';
+                result.style.color = '#38a169';
+                const skill = skills.find(s => s.id === skillId);
+                if (skill) {
+                    skill.progress = Math.min(100, skill.progress + 5);
+                    skill.lastUsed = Date.now();
+                    renderAll();
+                    pushHistory();
+                    saveData();
+                }
+            } else {
+                result.textContent = '❌ Wrong!';
+                result.style.color = '#c53030';
+            }
+        }
+
+        // ========== GROQ API ==========
+        async function callGroq(prompt) {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.1-8b-instant',
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0.7,
+                    max_tokens: 600
+                })
+            });
+
+            if (!response.ok) throw new Error('API error');
+            const data = await response.json();
+            return data.choices[0].message.content.trim();
+        }
+
+        function extractJSON(text) {
+            let cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '');
+            const startArr = cleaned.indexOf('[');
+            const endArr = cleaned.lastIndexOf(']');
+            const startObj = cleaned.indexOf('{');
+            const endObj = cleaned.lastIndexOf('}');
+
+            if (startArr !== -1 && endArr > startArr && (startObj === -1 || startArr < startObj)) {
+                cleaned = cleaned.substring(startArr, endArr + 1);
+            } else if (startObj !== -1 && endObj > startObj) {
+                cleaned = cleaned.substring(startObj, endObj + 1);
+            }
+
+            return JSON.parse(cleaned);
+        }
+
+        // ========== SKILL MANAGEMENT ==========
+        function normalizeId(name) {
+            return name.toLowerCase().replace(/\.js$/i, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+        }
+
+        function addSkill(skill) {
+            const id = skill.id || normalizeId(skill.name);
+            const existing = skills.find(s => s.id === id);
+            if (existing) {
+                Object.assign(existing, skill);
+            } else {
+                skills.push({ ...skill, id });
+            }
+        }
+
+        function openAddSkillModal(parentId = null) {
+            document.getElementById('skillModalTitle').textContent = '➕ Add Skill';
+            document.getElementById('skillId').value = '';
+            document.getElementById('skillName').value = '';
+            document.getElementById('skillProgress').value = 50;
+            document.getElementById('hoursValue').textContent = '0';
+            document.getElementById('skillProof').value = '';
+            document.getElementById('skillDesc').value = '';
+            updateProgressLabel();
+            updateParentSelect(parentId);
+            openModal('skillModal');
+        }
+
+        function openEditSkillModal(skillId) {
+            const skill = skills.find(s => s.id === skillId);
+            if (!skill) return;
+
+            document.getElementById('skillModalTitle').textContent = '✏️ Edit Skill';
+            document.getElementById('skillId').value = skill.id;
+            document.getElementById('skillName').value = skill.name;
+            document.getElementById('skillProgress').value = skill.progress || 50;
+            document.getElementById('hoursValue').textContent = skill.hours || 0;
+            document.getElementById('skillProof').value = skill.proof || '';
+            document.getElementById('skillDesc').value = skill.description || '';
+            updateProgressLabel();
+            updateParentSelect(skill.parentId);
+            openModal('skillModal');
+        }
+
+        function openAddChildModal(parentId) {
+            openAddSkillModal(parentId);
+        }
+
+        function updateParentSelect(selectedId = null) {
+            const select = document.getElementById('skillParent');
+            const currentId = document.getElementById('skillId').value;
+            select.innerHTML = '<option value="">— None (Top-level) —</option>';
+            skills.filter(s => !s.parentId && s.id !== currentId).forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.name;
+                if (s.id === selectedId) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function updateProgressLabel() {
+            const val = parseInt(document.getElementById('skillProgress').value);
+            document.getElementById('progressValue').textContent = val + '%';
+            let level = 'Beginner';
+            if (val > 25) level = 'Intermediate';
+            if (val > 50) level = 'Competent';
+            if (val > 75) level = 'Advanced';
+            if (val > 90) level = 'Expert';
+            document.getElementById('progressLevel').textContent = level;
+        }
+
+        function addHour() {
+            const el = document.getElementById('hoursValue');
+            el.textContent = parseInt(el.textContent) + 1;
+        }
+
+        function addHours(n) {
+            const el = document.getElementById('hoursValue');
+            el.textContent = parseInt(el.textContent) + n;
+        }
+
+        function saveSkill() {
+            const id = document.getElementById('skillId').value;
+            const name = document.getElementById('skillName').value.trim();
+            if (!name) {
+                showToast('Enter a name', 'error');
+                return;
+            }
+
+            const skill = {
+                id: id || normalizeId(name),
+                name,
+                progress: parseInt(document.getElementById('skillProgress').value),
+                hours: parseInt(document.getElementById('hoursValue').textContent),
+                proof: document.getElementById('skillProof').value.trim(),
+                description: document.getElementById('skillDesc').value.trim(),
+                parentId: document.getElementById('skillParent').value || null,
+                lastUsed: Date.now(),
+                dateAdded: id ? (skills.find(s => s.id === id)?.dateAdded || Date.now()) : Date.now(),
+                category: id ? (skills.find(s => s.id === id)?.category || null) : null
+            };
+
+            addSkill(skill);
+            closeModal('skillModal');
+            renderAll();
+            pushHistory();
+            saveData();
+            showToast(id ? 'Skill updated!' : 'Skill added!', 'success');
+        }
+
+        function refreshSkill(skillId) {
+            const skill = skills.find(s => s.id === skillId);
+            if (skill) {
+                skill.lastUsed = Date.now();
+                renderAll();
+                saveData();
+                showToast('Skill refreshed!', 'success');
+            }
+        }
+
+        function freezeNode(skillId) {
+            const skill = skills.find(s => s.id === skillId);
+            if (skill && network) {
+                const pos = network.getPositions([skillId])[skillId];
+                if (pos) {
+                    skill.x = pos.x;
+                    skill.y = pos.y;
+                    saveData();
+                    showToast('Position frozen!', 'success');
+                }
+            }
+        }
+
+        function removeSkill(skillId) {
+            if (!confirm('Delete this skill?')) return;
+            skills = skills.filter(s => s.id !== skillId && s.parentId !== skillId);
+            relations = relations.filter(r => r.from !== skillId && r.to !== skillId);
+            renderAll();
+            pushHistory();
+            saveData();
+            showToast('Deleted', 'info');
+        }
+
+        function removeConnection(index) {
+            relations.splice(index, 1);
+            renderAll();
+            pushHistory();
+            saveData();
+        }
+
+        function loadExample() {
+            skills = [
+                { id: 'html', name: 'HTML', progress: 90, hours: 500, description: 'Markup', parentId: null, lastUsed: Date.now(), dateAdded: Date.now() - 86400000 * 365, category: 'Frontend' },
+                { id: 'css', name: 'CSS', progress: 85, hours: 400, description: 'Styling', parentId: null, lastUsed: Date.now(), dateAdded: Date.now() - 86400000 * 300, category: 'Frontend' },
+                { id: 'javascript', name: 'JavaScript', progress: 80, hours: 800, description: 'Programming', parentId: null, lastUsed: Date.now(), dateAdded: Date.now() - 86400000 * 200, category: 'Frontend' },
+                { id: 'promises', name: 'Promises', progress: 75, hours: 50, description: 'Async JS', parentId: 'javascript', lastUsed: Date.now(), dateAdded: Date.now() - 86400000 * 100 },
+                { id: 'react', name: 'React', progress: 65, hours: 300, description: 'UI Library', parentId: null, lastUsed: Date.now() - 86400000 * 60, dateAdded: Date.now() - 86400000 * 150, category: 'Frontend' },
+                { id: 'nodejs', name: 'Node.js', progress: 55, hours: 200, description: 'Server', parentId: null, lastUsed: Date.now() - 86400000 * 90, dateAdded: Date.now() - 86400000 * 120, category: 'Backend' },
+                { id: 'python', name: 'Python', progress: 30, hours: 50, description: 'General purpose', parentId: null, lastUsed: Date.now() - 86400000 * 180, dateAdded: Date.now() - 86400000 * 50, category: 'Backend' },
+            ];
+            relations = [
+                { from: 'html', to: 'css', type: 'related', reason: 'Web fundamentals' },
+                { from: 'html', to: 'javascript', type: 'prerequisite', reason: 'JS manipulates DOM' },
+                { from: 'javascript', to: 'react', type: 'prerequisite', reason: 'React is JS' },
+                { from: 'javascript', to: 'nodejs', type: 'prerequisite', reason: 'Node uses JS' },
+            ];
+            renderAll();
+            pushHistory();
+            saveData();
+        }
+
+        // ========== RENDERING ==========
+        function renderAll() {
+            renderStickers();
+            renderNetwork();
+            renderConnections();
+        }
+
+        function getProgressColor(progress) {
+            if (progress <= 25) return { bg: '#64b5f6', border: '#1976d2' };
+            if (progress <= 50) return { bg: '#ffb74d', border: '#f57c00' };
+            if (progress <= 75) return { bg: '#f06292', border: '#c2185b' };
+            return { bg: '#ba68c8', border: '#7b1fa2' };
+        }
+
+        function getCategoryColor(cat) {
+            const colors = {
+                'Frontend': '#61dafb',
+                'Backend': '#68d391',
+                'DevOps': '#fc8181',
+                'Data': '#f6ad55',
+                'Mobile': '#b794f4',
+                'Design': '#f687b3',
+                'SoftSkill': '#fbd38d',
+                'Tool': '#a0aec0'
+            };
+            return colors[cat] || null;
+        }
+
+        function isRusty(skill) {
+            if (!skill.lastUsed) return false;
+            const sixMonths = 180 * 24 * 60 * 60 * 1000;
+            return Date.now() - skill.lastUsed > sixMonths;
+        }
+
+        function renderStickers() {
+            const grid = document.getElementById('stickersGrid');
+            const count = document.getElementById('stickerCount');
+            const breadcrumb = document.getElementById('breadcrumb');
+
+            if (!grid) return;
+
+            const viewSkills = currentParentView
+                ? skills.filter(s => s.parentId === currentParentView)
+                : skills.filter(s => !s.parentId);
+
+            count.textContent = skills.length;
+
+            // Breadcrumb
+            if (currentParentView) {
+                const parent = skills.find(s => s.id === currentParentView);
+                breadcrumb.style.display = 'flex';
+                breadcrumb.innerHTML = `
+                    <div class="breadcrumb-item" onclick="drillUp()">← All</div>
+                    <span>→</span>
+                    <div class="breadcrumb-item">${parent?.name || 'Unknown'}</div>
+                `;
+            } else {
+                breadcrumb.style.display = 'none';
+            }
+
+            if (viewSkills.length === 0) {
+                grid.innerHTML = '<div class="stickers-empty">no skills yet</div>';
+                return;
+            }
+
+            grid.innerHTML = viewSkills.map(s => {
+                const rusty = isRusty(s);
+                const hasChildren = skills.some(c => c.parentId === s.id);
+                const circumference = 2 * Math.PI * 9;
+                const offset = circumference - (s.progress / 100) * circumference;
+                const color = getProgressColor(s.progress);
+
+                return `
+                    <div class="skill-sticker ${rusty ? 'rusty' : ''} ${hasChildren ? 'has-children' : ''}"
+                         style="border-color: ${color.border}"
+                         onclick="drillDown('${s.id}')"
+                         oncontextmenu="showContextMenu(event, '${s.id}')">
+                        <div class="sticker-progress">
+                            <svg><circle class="bg" cx="12" cy="12" r="9"/><circle class="fg" cx="12" cy="12" r="9" stroke="${color.border}" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/></svg>
+                            ${s.progress}
+                        </div>
+                        ${s.name}
+                        ${s.proof ? `<a href="${s.proof}" target="_blank" class="proof-link" onclick="event.stopPropagation()">🔗</a>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function drillDown(skillId) {
+            const hasChildren = skills.some(s => s.parentId === skillId);
+            if (hasChildren) {
+                currentParentView = skillId;
+                renderStickers();
+            } else {
+                openEditSkillModal(skillId);
+            }
+        }
+
+        function drillUp() {
+            currentParentView = null;
+            renderStickers();
+        }
+
+        function renderNetwork() {
+            const container = document.getElementById('network-container');
+            const empty = document.getElementById('networkEmpty');
+
+            if (!container) return;
+
+            const viewSkills = currentParentView
+                ? skills.filter(s => s.parentId === currentParentView)
+                : skills.filter(s => !s.parentId);
+
+            // Filter by timeline
+            const timelineVal = parseInt(document.getElementById('timelineSlider')?.value || 100);
+            const now = Date.now();
+            const oldest = Math.min(...skills.map(s => s.dateAdded || now), now);
+            const cutoff = oldest + ((now - oldest) * timelineVal / 100);
+            const filteredSkills = viewSkills.filter(s => (s.dateAdded || now) <= cutoff);
+
+            if (filteredSkills.length === 0) {
+                if (empty) empty.style.display = 'flex';
+                if (network) { network.destroy(); network = null; }
+                return;
+            }
+
+            if (empty) empty.style.display = 'none';
+
+            const isBlueprint = document.documentElement.getAttribute('data-theme') === 'blueprint';
+
+            const nodes = new vis.DataSet(filteredSkills.map(s => {
+                const color = getCategoryColor(s.category) ? { bg: getCategoryColor(s.category), border: getCategoryColor(s.category) } : getProgressColor(s.progress);
+                const size = 15 + (s.progress * 0.25);
+                const rusty = isRusty(s);
+
+                return {
+                    id: s.id,
+                    label: s.name,
+                    title: `${s.name}\n${s.progress}% | ${s.hours || 0}h\n${s.description || ''}`,
+                    x: s.x || undefined,
+                    y: s.y || undefined,
+                    fixed: s.x !== undefined,
+                    color: {
+                        background: rusty ? '#999' : color.bg,
+                        border: rusty ? '#666' : color.border,
+                        highlight: { background: '#fff', border: isBlueprint ? '#4cc9f0' : '#2d2a26' }
+                    },
+                    font: { color: isBlueprint ? '#e0fbfc' : '#2d2a26', size: 12, strokeWidth: 2, strokeColor: isBlueprint ? '#0d1b2a' : '#fff' },
+                    shape: 'dot',
+                    size,
+                    borderWidth: rusty ? 2 : 3,
+                    borderDashes: rusty ? [5, 5] : false,
+                    opacity: focusedNode && focusedNode !== s.id ? 0.3 : 1
+                };
+            }));
+
+            const filteredRelations = relations.filter(r =>
+                filteredSkills.find(s => s.id === r.from) &&
+                filteredSkills.find(s => s.id === r.to)
+            );
+
+            const edges = new vis.DataSet(filteredRelations.map((r, i) => ({
+                id: i,
+                from: r.from,
+                to: r.to,
+                title: r.reason || r.type,
+                arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+                color: { color: r.type === 'prerequisite' ? '#e85d04' : '#40c057', highlight: isBlueprint ? '#4cc9f0' : '#2d2a26' },
+                width: 2,
+                smooth: { type: 'curvedCW', roundness: 0.15 },
+                dashes: r.type === 'related',
+                opacity: focusedNode ? 0.3 : 1
+            })));
+
+            const options = {
+                physics: {
+                    solver: 'forceAtlas2Based',
+                    forceAtlas2Based: { gravitationalConstant: -35, centralGravity: 0.02, springLength: 100, springConstant: 0.08 },
+                    stabilization: { iterations: 80 }
+                },
+                interaction: { hover: true, tooltipDelay: 100, navigationButtons: false },
+                manipulation: manipulationEnabled ? {
+                    enabled: true,
+                    addEdge: (data, callback) => {
+                        if (data.from !== data.to) {
+                            relations.push({ from: data.from, to: data.to, type: 'manual' });
+                            pushHistory();
+                            saveData();
+                            renderAll();
+                        }
+                        callback(null);
+                    }
+                } : false,
+                nodes: { shadow: { enabled: true, size: 6, x: 2, y: 2, color: 'rgba(0,0,0,0.15)' } }
+            };
+
+            if (network) network.destroy();
+            network = new vis.Network(container, { nodes, edges }, options);
+
+            network.on('click', (params) => {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    if (focusedNode === nodeId) {
+                        focusedNode = null;
+                    } else {
+                        focusedNode = nodeId;
+                    }
+                    renderNetwork();
+                } else {
+                    focusedNode = null;
+                    renderNetwork();
+                }
+            });
+
+            network.on('oncontext', (params) => {
+                params.event.preventDefault();
+                const nodeId = network.getNodeAt(params.pointer.DOM);
+                if (nodeId) {
+                    showContextMenu(params.event, nodeId);
+                }
+            });
+        }
+
+        function toggleManipulation() {
+            manipulationEnabled = !manipulationEnabled;
+            const btn = document.getElementById('manipBtn');
+            btn.style.background = manipulationEnabled ? '#a8e6cf' : '';
+            renderNetwork();
+            showToast(manipulationEnabled ? 'Draw mode ON - drag between nodes' : 'Draw mode OFF', 'info');
+        }
+
+        function filterByTimeline() {
+            const val = parseInt(document.getElementById('timelineSlider').value);
+            const now = Date.now();
+            const oldest = Math.min(...skills.map(s => s.dateAdded || now), now);
+            const cutoff = new Date(oldest + ((now - oldest) * val / 100));
+            document.getElementById('timelineDate').textContent = val >= 99 ? 'Now' : cutoff.toLocaleDateString();
+            renderNetwork();
+        }
+
+        function renderConnections() {
+            const panel = document.getElementById('connectionsPanel');
+            const list = document.getElementById('connectionsList');
+
+            if (!panel || !list) return;
+
+            if (relations.length === 0) {
+                panel.classList.remove('show');
+                return;
+            }
+
+            panel.classList.add('show');
+            list.innerHTML = relations.map((r, i) => {
+                const from = skills.find(s => s.id === r.from);
+                const to = skills.find(s => s.id === r.to);
+                return `
+                    <div class="connection-item">
+                        <span class="conn-from">${from?.name || r.from}</span>
+                        <span class="conn-arrow">→</span>
+                        <span class="conn-to">${to?.name || r.to}</span>
+                        <span class="conn-type">${r.type || 'manual'}</span>
+                        <button class="conn-delete" onclick="removeConnection(${i})">×</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function centerNetwork() {
+            if (network) network.fit({ animation: true });
+        }
+
+        // ========== IMAGE EXPORT ==========
+        function exportImage() {
+            if (!network) {
+                showToast('No graph to export', 'error');
+                return;
+            }
+
+            const canvas = document.querySelector('#network-container canvas');
+            if (!canvas) {
+                showToast('Canvas not found', 'error');
+                return;
+            }
+
+            // Create a new canvas with white/transparent background
+            const exportCanvas = document.createElement('canvas');
+            const ctx = exportCanvas.getContext('2d');
+            exportCanvas.width = canvas.width;
+            exportCanvas.height = canvas.height;
+
+            // Optional: transparent background (comment out for white)
+            // ctx.fillStyle = '#fff';
+            // ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+            // Draw the network canvas
+            ctx.drawImage(canvas, 0, 0);
+
+            // Add watermark
+            ctx.font = '14px Inter, sans-serif';
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillText('my skills ✏️', 10, exportCanvas.height - 10);
+
+            // Download
+            const link = document.createElement('a');
+            link.download = 'my-skills-map.png';
+            link.href = exportCanvas.toDataURL('image/png');
+            link.click();
+
+            showToast('Image saved!', 'success');
+        }
+
+        // ========== DATA PERSISTENCE ==========
+        async function saveData() {
+            try {
+                if (db) {
+                    await saveToDB('skills', skills);
+                    await saveToDB('relations', relations);
+                }
+                // Backup to localStorage
+                localStorage.setItem('skills_backup', JSON.stringify({ skills, relations }));
+            } catch (e) {
+                console.error('Save error:', e);
+                // Fallback to localStorage only
+                localStorage.setItem('skills_backup', JSON.stringify({ skills, relations }));
+            }
+        }
+
+        function saveToDB(store, data) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readwrite');
+                const s = tx.objectStore(store);
+                s.clear();
+                data.forEach(item => s.add(item));
+                tx.oncomplete = resolve;
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        async function loadData() {
+            try {
+                if (db) {
+                    skills = await loadFromDB('skills');
+                    relations = await loadFromDB('relations');
+                }
+
+                // If empty, try localStorage backup
+                if (skills.length === 0) {
+                    const backup = localStorage.getItem('skills_backup');
+                    if (backup) {
+                        const data = JSON.parse(backup);
+                        skills = data.skills || [];
+                        relations = data.relations || [];
+                    }
+                }
+            } catch (e) {
+                console.error('Load error:', e);
+                // Try localStorage backup
+                const backup = localStorage.getItem('skills_backup');
+                if (backup) {
+                    const data = JSON.parse(backup);
+                    skills = data.skills || [];
+                    relations = data.relations || [];
+                }
+            }
+        }
+
+        function loadFromDB(store) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readonly');
+                const s = tx.objectStore(store);
+                const req = s.getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        // ========== IMPORT / EXPORT ==========
+        function exportData() {
+            const data = JSON.stringify({ skills, relations, exportedAt: new Date().toISOString() }, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my-skills-' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Exported!', 'success');
+        }
+
+        function importData() {
+            const text = document.getElementById('importData').value.trim();
+            if (!text) {
+                showToast('Paste JSON data', 'error');
+                return;
+            }
+
+            try {
+                const data = JSON.parse(text);
+                if (data.skills && Array.isArray(data.skills)) {
+                    // Merge or replace
+                    if (skills.length > 0 && !confirm('Replace existing skills? (Cancel to merge)')) {
+                        // Merge
+                        data.skills.forEach(s => addSkill(s));
+                        if (data.relations) {
+                            data.relations.forEach(r => {
+                                if (!relations.find(x => x.from === r.from && x.to === r.to)) {
+                                    relations.push(r);
+                                }
+                            });
+                        }
+                    } else {
+                        // Replace
+                        skills = data.skills;
+                        relations = data.relations || [];
+                    }
+                }
+
+                renderAll();
+                pushHistory();
+                saveData();
+                closeModal('importModal');
+                document.getElementById('importData').value = '';
+                showToast('Imported!', 'success');
+            } catch (e) {
+                showToast('Invalid JSON', 'error');
+            }
+        }
+
+        // ========== RESUME GENERATOR ==========
+        function generateResume() {
+            if (skills.length === 0) {
+                showToast('Add skills first', 'error');
+                return;
+            }
+
+            // Group by progress level
+            const groups = {
+                'Expert (90-100%)': skills.filter(s => s.progress >= 90 && !s.parentId),
+                'Advanced (75-89%)': skills.filter(s => s.progress >= 75 && s.progress < 90 && !s.parentId),
+                'Competent (50-74%)': skills.filter(s => s.progress >= 50 && s.progress < 75 && !s.parentId),
+                'Learning (0-49%)': skills.filter(s => s.progress < 50 && !s.parentId)
+            };
+
+            let md = '# Skills\n\n';
+
+            for (const [level, list] of Object.entries(groups)) {
+                if (list.length > 0) {
+                    md += `## ${level}\n`;
+                    list.sort((a, b) => b.progress - a.progress).forEach(s => {
+                        md += `- **${s.name}** (${s.progress}%)`;
+                        if (s.hours) md += ` — ${s.hours}h`;
+                        if (s.description) md += ` — ${s.description}`;
+                        md += '\n';
+
+                        // Add sub-skills
+                        const children = skills.filter(c => c.parentId === s.id);
+                        children.forEach(c => {
+                            md += `  - ${c.name} (${c.progress}%)\n`;
+                        });
+                    });
+                    md += '\n';
+                }
+            }
+
+            // Add categories if available
+            const categories = [...new Set(skills.map(s => s.category).filter(Boolean))];
+            if (categories.length > 0) {
+                md += '## By Category\n';
+                categories.forEach(cat => {
+                    const catSkills = skills.filter(s => s.category === cat && !s.parentId);
+                    md += `- **${cat}**: ${catSkills.map(s => s.name).join(', ')}\n`;
+                });
+                md += '\n';
+            }
+
+            md += `\n---\n_Generated on ${new Date().toLocaleDateString()}_`;
+
+            document.getElementById('resumeOutput').value = md;
+            openModal('resumeModal');
+        }
+
+        function copyResume() {
+            const text = document.getElementById('resumeOutput').value;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard!', 'success');
+            });
+        }
+
+        // ========== SHAREABLE URL ==========
+        function generateShareUrl() {
+            if (skills.length === 0) {
+                showToast('Add skills first', 'error');
+                return;
+            }
+
+            const data = { skills, relations };
+            const json = JSON.stringify(data);
+            const encoded = btoa(unescape(encodeURIComponent(json)));
+            const url = window.location.origin + window.location.pathname + '#data=' + encoded;
+
+            document.getElementById('shareUrl').value = url;
+            openModal('shareModal');
+        }
+
+        function copyShareUrl() {
+            const url = document.getElementById('shareUrl').value;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('URL copied!', 'success');
+            });
+        }
+
+        function getUrlData() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#data=')) {
+                try {
+                    const encoded = hash.substring(6);
+                    const json = decodeURIComponent(escape(atob(encoded)));
+                    const data = JSON.parse(json);
+                    // Clear the hash after loading
+                    history.replaceState(null, '', window.location.pathname);
+                    return data;
+                } catch (e) {
+                    console.error('Failed to parse URL data:', e);
+                }
+            }
+            return null;
+        }
+
+        // ========== CLEAR ALL ==========
+        async function clearAll() {
+            if (!confirm('Delete all skills and connections?')) return;
+            skills = [];
+            relations = [];
+            currentParentView = null;
+            focusedNode = null;
+            history = [];
+            historyIndex = -1;
+
+            await saveData();
+            renderAll();
+            pushHistory();
+            showToast('Cleared', 'info');
+        }
+
+        // ========== INIT ==========
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
